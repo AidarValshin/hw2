@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Log4j2
 @Getter
@@ -19,6 +20,8 @@ public class Truck extends Thread {
     private final Queue<Warehouse> routeList = new LinkedList<>();
 
     private final long travelTime = Math.round(Math.random() * 2000);
+    private final AtomicBoolean isPerforming = new AtomicBoolean(false);
+
 
 
     public Truck(String name, int capacity, List<Warehouse> route) {
@@ -40,6 +43,13 @@ public class Truck extends Thread {
             Warehouse warehouse = routeList.poll();
             travel(warehouse);
             warehouse.arrive(this);
+            while (this.getIsPerforming().get()) {
+                try {
+                    sleep(10L);
+                } catch (InterruptedException e) {
+                    log.error("Interrupted while unloading truck", e);
+                }
+            }
         }
         log.info("Truck finished");
     }
